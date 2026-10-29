@@ -1,0 +1,17 @@
+{
+  "name": "unife",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @unife/web",
+    "api:dev": "npm run dev --workspace @unife/api",
+    "api:build": "npm run build --workspace @unife/api",
+    "build": "npm run build --workspace @unife/web",
+    "lint": "npm run lint --workspace @unife/web",
+    "preview": "npm run preview --workspace @unife/web"
+  }
+}

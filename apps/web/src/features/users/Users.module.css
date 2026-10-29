@@ -1,0 +1,25 @@
+.page { display: grid; gap: 18px; }
+.header { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+.kicker { margin: 0 0 7px; color: var(--color-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.heading { margin: 0; color: var(--color-primary); font-size: 28px; letter-spacing: -.03em; }
+.description { margin: 7px 0 0; color: var(--color-text-muted); font-size: 13px; }
+.panel { padding: 20px; border: 1px solid rgba(255,255,255,.9); border-radius: 14px; background: var(--color-surface); box-shadow: 0 14px 32px rgba(0,0,80,.07); backdrop-filter: blur(18px); }
+.primary { min-height: 40px; padding: 0 15px; border-radius: 9px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.primary { border: 1px solid var(--color-primary); color: white; background: var(--color-primary); }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 13px 10px; border-bottom: 1px solid rgba(0,0,80,.08); text-align: left; font-size: 12px; }
+.table th { color: var(--color-text-muted); font-size: 10px; text-transform: uppercase; }
+.empty { padding: 30px; color: var(--color-text-muted); font-size: 12px; text-align: center; }
+.avatar { display: inline-grid; width: 32px; height: 32px; margin-right: 8px; place-items: center; border-radius: 10px; color: white; font-size: 11px; font-weight: 700; vertical-align: middle; }
+.role { padding: 5px 8px; border-radius: 999px; color: var(--color-primary); background: var(--color-primary-soft); font-size: 10px; font-weight: 700; }
+.editButton { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-primary); background: white; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.deleteButton { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid #f1c5c8; border-radius: 8px; color: var(--color-danger); background: #fff7f7; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.deleteButton:disabled { cursor: not-allowed; opacity: .5; }
+.actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.actionHint { display: block; margin-top: 6px; color: var(--color-text-muted); font-size: 10px; }
+.error { padding: 12px; border-radius: 9px; color: var(--color-danger); background: #fff0f1; font-size: 12px; }
+.label { color: var(--color-text-muted); font-size: 11px; font-weight: 700; }
+.avatarGrid { display: flex; flex-wrap: wrap; gap: 9px; }
+.avatarOption { display: grid; width: 54px; height: 54px; place-items: center; border: 2px solid transparent; border-radius: 14px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; }
+.avatarOptionSelected { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-soft); }
+@media (max-width: 650px) { .header { align-items: stretch; flex-direction: column; } .table { min-width: 520px; } .panel { overflow-x: auto; } }

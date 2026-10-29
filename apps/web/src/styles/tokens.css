@@ -1,0 +1,15 @@
+:root {
+  --color-primary: #000050;
+  --color-primary-hover: #000070;
+  --color-primary-soft: #e9ecff;
+  --color-background: #f5f7fc;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-solid: #ffffff;
+  --color-border: rgba(0, 0, 80, 0.12);
+  --color-text: #161625;
+  --color-text-muted: #626477;
+  --color-success: #16845b;
+  --color-warning: #b77900;
+  --color-danger: #bd3d4a;
+  --color-info: #2864a8;
+}
