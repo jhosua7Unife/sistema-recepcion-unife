@@ -9,8 +9,9 @@ import { cancelBooking, createBooking, listBookings, reviewBooking } from './boo
 import { database } from './database.js'
 import { authenticate, avatars, createUser, deactivateUser, listUsers, requireAuth, requireRoles, revokeSession, updateUser } from './auth.js'
 import { createProgram, deactivateProgram, getProgram, listPrograms, updateProgram } from './programs.js'
-import { cancelBookingSchema, createBookingSchema, createMessageSchema, createProgramSchema, createUserSchema, createVisitSchema, loginSchema, lookupPeopleSchema, updateProgramSchema, updateUserSchema } from './schemas.js'
+import { cancelBookingSchema, createBookingSchema, createMessageSchema, createProgramSchema, createUserSchema, createVisitSchema, loginSchema, lookupPeopleSchema, updateProgramSchema, updateUserSchema, uploadWifiCouponsSchema } from './schemas.js'
 import { confirmVisitArchiveUpload, createVisit, getDocument, getVisitArchive, listVisitArchives, lookupPeople, markVisitArchiveDownloaded, reviewVisitArchive, listVisits, updateVisit, updateVisitStatus, type UploadedFile } from './visits.js'
+import { listWifiCoupons, markWifiCouponDelivered, uploadWifiCoupons, wifiCouponCounts } from './wifiCoupons.js'
 
 const app = express()
 const port = Number(process.env.PORT ?? 4000)
@@ -23,7 +24,7 @@ const upload = multer({
 })
 
 app.use(cors({ origin: process.env.WEB_ORIGIN ?? 'http://localhost:5173' }))
-app.use(express.json())
+app.use(express.json({ limit: '10mb' }))
 
 function cleanUploads(files: Express.Multer.File[]) {
   for (const file of files) fs.rmSync(file.path, { force: true })
@@ -108,6 +109,35 @@ app.delete('/api/programs/:id', requireAuth, requireRoles('supervisor'), (reques
   if (typeof programId !== 'string') return response.status(400).json({ message: 'Identificador de programa inválido' })
   if (!deactivateProgram(programId)) return response.status(404).json({ message: 'Programa no encontrado' })
   response.json({ success: true })
+})
+
+app.get('/api/supervisor/wifi-coupons', requireAuth, requireRoles('supervisor'), (_request, response) => {
+  const counts = wifiCouponCounts()
+  response.json({
+    counts: { total: counts.total, available: counts.available ?? 0, delivered: counts.delivered ?? 0 },
+    coupons: listWifiCoupons(),
+  })
+})
+app.post('/api/supervisor/wifi-coupons', requireAuth, requireRoles('supervisor'), (request, response) => {
+  const parsed = uploadWifiCouponsSchema.safeParse(request.body)
+  if (!parsed.success) return response.status(422).json({ message: 'Revisa los códigos: cada cupón debe contener únicamente números', issues: parsed.error.issues })
+  const result = uploadWifiCoupons(parsed.data.codes, request.user!.id)
+  const counts = wifiCouponCounts()
+  response.status(201).json({
+    added: result.added,
+    duplicates: result.duplicates,
+    counts: { total: counts.total, available: counts.available ?? 0, delivered: counts.delivered ?? 0 },
+  })
+})
+app.get('/api/reception/wifi-coupons', requireAuth, requireRoles('reception'), (_request, response) => {
+  response.json(listWifiCoupons('available'))
+})
+app.patch('/api/reception/wifi-coupons/:id/delivered', requireAuth, requireRoles('reception'), (request, response) => {
+  const id = request.params.id
+  if (typeof id !== 'string') return response.status(400).json({ message: 'Identificador de cupón inválido' })
+  const result = markWifiCouponDelivered(id, request.user!.id)
+  if ('error' in result) return response.status(result.error === 'Cupón no encontrado' ? 404 : 409).json({ message: result.error })
+  response.json({ id, status: result.status })
 })
 
 app.get('/api/dashboard', requireAuth, (request, response) => {

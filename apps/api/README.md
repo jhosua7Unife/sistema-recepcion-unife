@@ -37,7 +37,9 @@ respaldos de producción.
 - **Supervisor:** revisa agenda y administra usuarios y programas.
 - **Recepción:** registra visitas y es el único rol con acceso al archivo
   documental. Supervisores también pueden operar la sección general de
-  Recepción.
+  Recepción. Puede consultar cupones WiFi disponibles y marcar los entregados.
+- **Supervisor:** carga códigos numéricos de cupones WiFi; los códigos
+  duplicados se omiten.
 - La búsqueda de vigencia por persona está disponible para Recepción y
   supervisores.
 
@@ -71,12 +73,20 @@ permisos por rol.
 | `PATCH` | `/api/reception/archive/:id/review` | Validar expediente; solo Recepción |
 | `PATCH` | `/api/reception/archive/:id/complete` | Confirmar carga manual en OneDrive; solo Recepción |
 | `GET` | `/api/documents/:id` | Consultar documento; Recepción y supervisores |
+| `GET`, `POST` | `/api/supervisor/wifi-coupons` | Consultar inventario y cargar códigos numéricos; solo supervisores |
+| `GET` | `/api/reception/wifi-coupons` | Solicitar y consultar cupones disponibles; solo Recepción |
+| `PATCH` | `/api/reception/wifi-coupons/:id/delivered` | Marcar un cupón como entregado; solo Recepción |
 | `GET`, `POST`, `PATCH` | `/api/notifications` y `/api/notifications/:id/read` | Consultar avisos y marcar lectura |
 | `GET`, `POST`, `PATCH` | `/api/messages` y `/api/messages/:id/read` | Consultar, enviar y marcar notas internas |
 
 El paquete ZIP contiene el formulario PDF y los documentos originales
 disponibles. La persona usuaria debe subirlo manualmente a OneDrive; confirmar
 la ficha registra esa acción, pero no verifica la transferencia externa.
+
+Los cupones WiFi se guardan en SQLite sin un límite de cantidad acumulada. Cada
+código debe contener solo números; los ya cargados no se duplican. Al marcarlo
+como entregado, deja de aparecer en la lista de Recepción. Su uso es para
+invitados que lo soliciten, no personal, y caduca después de 8 horas.
 
 ## Usuarios de demostración
 

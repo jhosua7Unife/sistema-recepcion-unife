@@ -218,6 +218,34 @@
 .dayStatus_attention { border-color: #f2b9bd; color: #bd2635; background: #fff0f1; }
 .dayStatusHint { margin: 2px 0 0; padding-top: 10px; border-top: 1px solid rgba(0,0,80,.08); color: var(--color-text-muted); font-size: 10px; line-height: 1.5; }
 
+.wifiPanel { display: grid; align-content: start; gap: 12px; background: linear-gradient(145deg, rgba(237,248,255,.97), rgba(255,255,255,.97)); }
+.wifiPanel .panelHeader { margin-bottom: 0; }
+.wifiIcon { display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; border: 1px solid #b9dffc; border-radius: 11px; color: #12619a; background: #e4f4ff; }
+.wifiPolicy { margin: 0; padding: 11px 12px; border: 1px solid #cde7fa; border-radius: 10px; color: #25516e; background: #f0f9ff; font-size: 11px; line-height: 1.55; }
+.wifiPrimaryButton, .wifiDeliveredButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 13px; border: 1px solid #12619a; border-radius: 9px; color: white; background: #12619a; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.wifiPrimaryButton { justify-self: start; }
+.wifiPrimaryButton:disabled, .wifiDeliveredButton:disabled { cursor: wait; opacity: .6; }
+.wifiError, .wifiSuccess { margin: 0; padding: 9px 11px; border-radius: 8px; font-size: 10px; line-height: 1.5; }
+.wifiError { color: #8e2c34; background: #fff0f1; }
+.wifiSuccess { color: var(--color-success); background: #e3f5ed; }
+.wifiCoupons, .wifiInventory { display: grid; gap: 8px; }
+.wifiCouponRow, .wifiInventoryRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 10px; border: 1px solid rgba(18,97,154,.12); border-radius: 9px; background: rgba(255,255,255,.8); }
+.wifiCode { color: #123954; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; font-weight: 700; letter-spacing: .08em; overflow-wrap: anywhere; }
+.wifiDeliveredButton { min-height: 32px; padding: 0 9px; border-color: #157354; color: #126246; background: #e7f7ef; font-size: 10px; }
+.wifiDeliveredButton:hover { background: #d7f0e3; }
+.wifiInputLabel { color: var(--color-text); font-size: 10px; font-weight: 700; }
+.wifiTextarea { width: 100%; min-height: 92px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 9px; outline: none; color: var(--color-text); background: rgba(255,255,255,.86); font: inherit; font-size: 12px; line-height: 1.5; resize: vertical; }
+.wifiTextarea:focus { border-color: #12619a; box-shadow: 0 0 0 3px rgba(18,97,154,.1); }
+.wifiCounts { display: flex; flex-wrap: wrap; gap: 7px; }
+.wifiCounts span { padding: 6px 9px; border-radius: 999px; color: #35566d; background: #e9f4fb; font-size: 9px; }
+.wifiCounts strong { color: #123954; }
+.wifiCouponList { display: grid; max-height: 190px; gap: 6px; overflow-y: auto; padding-right: 3px; }
+.wifiInventoryRow { padding: 6px 9px; }
+.wifiInventoryRow .wifiCode { font-size: 11px; }
+.wifiAvailable, .wifiUsed { padding: 4px 7px; border-radius: 999px; font-size: 9px; font-weight: 700; }
+.wifiAvailable { color: #126246; background: #e3f5ed; }
+.wifiUsed { color: #59667d; background: #edf0f5; }
+
 .notification { display: flex; gap: 10px; padding: 12px 0; border-top: 1px solid rgba(0,0,80,.08); }
 .notificationDot { width: 7px; height: 7px; margin-top: 5px; flex: 0 0 auto; border-radius: 50%; background: var(--color-primary); }
 .notificationTitle { margin: 0 0 3px; font-size: 11px; font-weight: 700; }

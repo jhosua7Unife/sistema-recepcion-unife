@@ -7,6 +7,7 @@ La API usa SQLite (`node:sqlite`) para persistencia local, sin dependencias nati
 - Las migraciones versionadas se guardan en `sqlite/` y se aplican al iniciar la API mediante `PRAGMA user_version`.
 - La migración inicial define usuarios, sesiones, programas, reservas e invitados, visitas, personas y documentos, notificaciones y mensajes.
 - La migración `003_reception_archive.sql` añade perfiles documentales reutilizables, historial de versiones y estados independientes del archivo de Recepción.
+- La migración `004_wifi_coupons.sql` añade el inventario persistente de cupones WiFi, con registro del usuario que los cargó y entregó.
 - La base local predeterminada es `apps/api/storage/unife.sqlite`; puede cambiarse con `DATABASE_PATH`.
 - La API crea usuarios y programas de demostración solo cuando no existen, sin borrar los datos guardados.
 

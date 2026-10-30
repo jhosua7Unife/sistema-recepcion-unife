@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Archive, Bell, CalendarDays, CheckCircle2, ClipboardList, Clock3, LayoutDashboard, LogOut, Tv, UserCog, Users, Video } from 'lucide-react'
+import { Archive, Bell, CalendarDays, Check, CheckCircle2, ClipboardList, Clock3, LayoutDashboard, LogOut, Tv, Upload, UserCog, Users, Video, Wifi } from 'lucide-react'
 import type { FormEvent, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
-import { ApiError, getAvatars, getCurrentUser, getDashboard, getMessages, getNotifications, markMessageRead, markNotificationRead, sendMessage, type Message, type Notification, type User } from './services/api'
+import { ApiError, getAvatars, getCurrentUser, getDashboard, getMessages, getNotifications, getReceptionWifiCoupons, getSupervisorWifiCoupons, markMessageRead, markNotificationRead, markReceptionWifiCouponDelivered, sendMessage, uploadSupervisorWifiCoupons, type Message, type Notification, type User, type WifiCoupon } from './services/api'
 import { Login } from './features/auth/Login'
 import { Users as UserAdministration } from './features/users/Users'
 import { Reception } from './features/visitors/Reception'
@@ -134,7 +134,7 @@ function App() {
             {dashboard.notifications.map((notification) => <div className={styles.notification} key={notification.id}><span className={styles.notificationDot} /><div><p className={styles.notificationTitle}>{notification.title}</p><p className={styles.notificationDetail}>{notification.detail}</p></div></div>)}
           </section>
 
-          <DayStatus metrics={dashboard.metrics} role={currentUser.role} />
+          {currentUser.role === 'reception' ? <ReceptionWifiCoupons /> : currentUser.role === 'supervisor' ? <SupervisorWifiCoupons /> : <DayStatus metrics={dashboard.metrics} role={currentUser.role} />}
           </div>
         </>}
       </main>
@@ -156,6 +156,129 @@ function DayStatus({ metrics, role }: { metrics: typeof fallbackDashboard.metric
       {role === 'supervisor' && <DayStatusItem icon={<ClipboardList size={15} />} label="Solicitudes por aprobar" value={metrics.pendingBookingReviews} variant="attention" />}
     </div>
     <p className={styles.dayStatusHint}>{attentionNeeded ? 'Revisa las llegadas esperadas y las solicitudes que requieren seguimiento.' : 'No hay llegadas pendientes ni solicitudes de agenda por aprobar.'}</p>
+  </section>
+}
+
+function ReceptionWifiCoupons() {
+  const client = useQueryClient()
+  const [requested, setRequested] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const query = useQuery({
+    queryKey: ['wifi-coupons', 'reception'],
+    queryFn: getReceptionWifiCoupons,
+    enabled: requested,
+    refetchInterval: requested ? 15_000 : false,
+    retry: false,
+  })
+  const deliveryMutation = useMutation({
+    mutationFn: (coupon: WifiCoupon) => markReceptionWifiCouponDelivered(coupon.id),
+    onSuccess: async (_result, coupon) => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['wifi-coupons', 'reception'] }),
+        client.invalidateQueries({ queryKey: ['wifi-coupons', 'supervisor'] }),
+      ])
+      setError('')
+      setMessage(`El cupón ${coupon.code} quedó marcado como entregado.`)
+    },
+    onError: (cause) => setError(cause instanceof Error ? cause.message : 'No se pudo marcar el cupón como entregado.'),
+  })
+  const requestCoupons = async () => {
+    setRequested(true)
+    setMessage('')
+    setError('')
+    const result = await query.refetch()
+    if (result.isError) setError(result.error instanceof Error ? result.error.message : 'No se pudieron consultar los cupones.')
+  }
+  const markDelivered = (coupon: WifiCoupon) => {
+    if (!window.confirm(`¿Confirmas que entregaste el cupón ${coupon.code} a un invitado?`)) return
+    setMessage('')
+    setError('')
+    deliveryMutation.mutate(coupon)
+  }
+
+  return <section className={`${styles.glass} ${styles.panel} ${styles.wifiPanel}`}>
+    <div className={styles.panelHeader}>
+      <div><h2 className={styles.panelTitle}>Solicitud de cupones WiFi</h2><p className={styles.panelCaption}>Códigos disponibles para los invitados</p></div>
+      <span className={styles.wifiIcon}><Wifi size={18} /></span>
+    </div>
+    <p className={styles.wifiPolicy}>El cupón se da para los invitados que lo soliciten, no es de uso personal y tiene un tiempo de caducidad de 8 horas.</p>
+    <button className={styles.wifiPrimaryButton} type="button" onClick={requestCoupons} disabled={query.isFetching || deliveryMutation.isPending}>
+      <Wifi size={15} /> {query.isFetching ? 'Consultando...' : requested ? 'Actualizar cupones disponibles' : 'Solicitar cupones'}
+    </button>
+    {error && <p className={styles.wifiError} role="alert">{error}</p>}
+    {message && <p className={styles.wifiSuccess} role="status">{message}</p>}
+    {requested && query.isError && !error && <p className={styles.wifiError} role="alert">No se pudieron cargar los cupones. Inténtalo de nuevo.</p>}
+    {requested && !query.isError && <div className={styles.wifiCoupons} aria-live="polite">
+      {query.isLoading ? <p className={styles.emptyState}>Cargando cupones...</p> : query.data?.length === 0 ? <p className={styles.emptyState}>No hay cupones disponibles. Solicita al supervisor que cargue más.</p> : query.data?.map((coupon) => <div className={styles.wifiCouponRow} key={coupon.id}>
+        <code className={styles.wifiCode}>{coupon.code}</code>
+        <button className={styles.wifiDeliveredButton} type="button" disabled={deliveryMutation.isPending} onClick={() => markDelivered(coupon)}><Check size={14} /> Marcar entregado</button>
+      </div>)}
+    </div>}
+  </section>
+}
+
+function SupervisorWifiCoupons() {
+  const client = useQueryClient()
+  const [rawCodes, setRawCodes] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const query = useQuery({ queryKey: ['wifi-coupons', 'supervisor'], queryFn: getSupervisorWifiCoupons, retry: false, refetchInterval: 15_000 })
+  const uploadMutation = useMutation({
+    mutationFn: uploadSupervisorWifiCoupons,
+    onSuccess: async (result) => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['wifi-coupons', 'supervisor'] }),
+        client.invalidateQueries({ queryKey: ['wifi-coupons', 'reception'] }),
+      ])
+      setRawCodes('')
+      setError('')
+      setMessage(`Se cargaron ${result.added} cupón${result.added === 1 ? '' : 'es'}${result.duplicates ? `. Se omitieron ${result.duplicates} código${result.duplicates === 1 ? ' duplicado' : 's duplicados'}.` : '.'}`)
+    },
+    onError: (cause) => setError(cause instanceof Error ? cause.message : 'No se pudieron cargar los cupones.'),
+  })
+  const codes = rawCodes.split(/\r?\n/).map((code) => code.trim()).filter(Boolean)
+  const submitCodes = () => {
+    setMessage('')
+    setError('')
+    if (codes.length === 0) {
+      setError('Escribe uno o más códigos antes de subirlos.')
+      return
+    }
+    if (codes.some((code) => !/^\d+$/.test(code))) {
+      setError('Cada cupón debe contener únicamente números y estar en una línea separada.')
+      return
+    }
+    uploadMutation.mutate(codes)
+  }
+
+  return <section className={`${styles.glass} ${styles.panel} ${styles.wifiPanel}`}>
+    <div className={styles.panelHeader}>
+      <div><h2 className={styles.panelTitle}>Cupones WiFi</h2><p className={styles.panelCaption}>Carga manual y control de disponibilidad</p></div>
+      <span className={styles.wifiIcon}><Wifi size={18} /></span>
+    </div>
+    <p className={styles.wifiPolicy}>Pega los códigos numéricos, uno por línea. El inventario no tiene límite de códigos; puedes subir varios lotes. Los duplicados se omiten y cada cupón queda disponible para Recepción.</p>
+    <label className={styles.wifiInputLabel} htmlFor="wifi-coupons-input">Códigos WiFi</label>
+    <textarea id="wifi-coupons-input" className={styles.wifiTextarea} value={rawCodes} onChange={(event) => setRawCodes(event.target.value)} placeholder={'Ejemplo:\n12345678\n87654321'} rows={4} disabled={uploadMutation.isPending} />
+    <button className={styles.wifiPrimaryButton} type="button" onClick={submitCodes} disabled={uploadMutation.isPending}>
+      <Upload size={15} /> {uploadMutation.isPending ? 'Subiendo...' : `Subir ${codes.length || ''} cupón${codes.length === 1 ? '' : 'es'}`}
+    </button>
+    {error && <p className={styles.wifiError} role="alert">{error}</p>}
+    {message && <p className={styles.wifiSuccess} role="status">{message}</p>}
+    {query.isError && <p className={styles.wifiError} role="alert">No se pudo cargar el inventario de cupones.</p>}
+    {query.data && <div className={styles.wifiInventory}>
+      <div className={styles.wifiCounts}>
+        <span><strong>{query.data.counts.available}</strong> disponibles</span>
+        <span><strong>{query.data.counts.delivered}</strong> entregados</span>
+        <span><strong>{query.data.counts.total}</strong> total</span>
+      </div>
+      {query.data.coupons.length === 0 ? <p className={styles.emptyState}>Todavía no hay códigos cargados.</p> : <div className={styles.wifiCouponList}>
+        {query.data.coupons.map((coupon) => <div className={styles.wifiInventoryRow} key={coupon.id}>
+          <code className={styles.wifiCode}>{coupon.code}</code>
+          <span className={coupon.status === 'available' ? styles.wifiAvailable : styles.wifiUsed}>{coupon.status === 'available' ? 'Disponible' : 'Entregado'}</span>
+        </div>)}
+      </div>}
+    </div>}
   </section>
 }
 

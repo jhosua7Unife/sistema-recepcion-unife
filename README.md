@@ -25,6 +25,8 @@ referencias.
   paquete descargable y conservar un historial para futuras consultas.
 - **Mantener comunicación operativa:** consultar notificaciones y enviar o
   revisar notas entre los perfiles de trabajo.
+- **Administrar cupones WiFi:** supervisión carga códigos numéricos y Recepción
+  consulta los disponibles y marca los que ya entregó a invitados.
 - **Dar seguimiento diario:** consultar recepciones del día, personas dentro de
   UNIFE, salidas registradas, agenda próxima y solicitudes pendientes.
 
@@ -60,12 +62,16 @@ referencias.
 - Aprueba o rechaza solicitudes y administra usuarios.
 - Crea, edita y desactiva programas; cada programa queda asociado a un productor
   y a un catálogo: **Programas UNIFE** o **Programas Iglesia**.
+- Carga códigos numéricos al inventario compartido de cupones WiFi; no hay un
+  límite acumulado y los duplicados se omiten.
 - Consulta la operación de Recepción y puede apoyar en el registro de visitas.
 - Ve en el resumen las solicitudes pendientes de aprobación.
 
 ### Recepción
 
 - Consulta las llegadas aprobadas y registra grupos e invitados.
+- Solicita cupones WiFi disponibles, los entrega a invitados que los soliciten
+  y marca cada código entregado para evitar reutilizarlo por error.
 - Captura identificaciones, autorizaciones, tutores y documentos requeridos.
 - Registra entradas y salidas, y busca visitas anteriores.
 - Consulta el archivo documental, revisa fichas y conserva un historial
@@ -101,6 +107,9 @@ El tablero presenta métricas y listas para orientar las tareas del día:
   para supervisión, solicitudes por aprobar.
 
 Las fechas del resumen se interpretan con la zona horaria de Ciudad de México.
+En el espacio de Estado del día, Recepción ve la solicitud de cupones WiFi y
+supervisión ve la carga e inventario. Los cupones se entregan únicamente a
+invitados que los soliciten, no son de uso personal y caducan a las 8 horas.
 
 ## Alcance actual y consideraciones
 

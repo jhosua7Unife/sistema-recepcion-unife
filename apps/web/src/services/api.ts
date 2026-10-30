@@ -91,6 +91,17 @@ export type VisitArchive = {
   downloadedAt: string | null
   uploadedAt: string | null
 }
+export type WifiCoupon = {
+  id: string
+  code: string
+  status: 'available' | 'delivered'
+  uploadedAt: string
+  deliveredAt: string | null
+}
+export type WifiCouponInventory = {
+  counts: { total: number; available: number; delivered: number }
+  coupons: WifiCoupon[]
+}
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 
@@ -112,6 +123,26 @@ export class ApiError extends Error {
 
 export async function getDashboard(): Promise<DashboardData> {
   return apiRequest<DashboardData>('/api/dashboard')
+}
+
+export function getReceptionWifiCoupons(): Promise<WifiCoupon[]> {
+  return apiRequest<WifiCoupon[]>('/api/reception/wifi-coupons')
+}
+
+export function markReceptionWifiCouponDelivered(id: string): Promise<{ id: string; status: 'delivered' }> {
+  return apiRequest<{ id: string; status: 'delivered' }>(`/api/reception/wifi-coupons/${encodeURIComponent(id)}/delivered`, { method: 'PATCH' })
+}
+
+export function getSupervisorWifiCoupons(): Promise<WifiCouponInventory> {
+  return apiRequest<WifiCouponInventory>('/api/supervisor/wifi-coupons')
+}
+
+export function uploadSupervisorWifiCoupons(codes: string[]): Promise<{
+  added: number
+  duplicates: number
+  counts: WifiCouponInventory['counts']
+}> {
+  return apiRequest('/api/supervisor/wifi-coupons', { method: 'POST', body: JSON.stringify({ codes }) })
 }
 
 async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {

@@ -35,6 +35,10 @@ export const lookupPeopleSchema = z.object({
   personType: z.enum(['adult', 'tutor']).default('adult'),
 })
 
+export const uploadWifiCouponsSchema = z.object({
+  codes: z.array(z.string().trim().min(1).regex(/^\d+$/, 'Cada cupón debe contener únicamente números')).min(1, 'Agrega al menos un cupón'),
+})
+
 export const createBookingSchema = z.object({
   resource: z.enum(['Foro 1', 'Foro 2', 'Croma', 'Locación']), programId: z.string().min(1),
   startsAt: z.string().datetime(), endsAt: z.string().datetime(), locationName: z.string().optional(), locationAddress: z.string().optional(), notes: z.string().optional(),
